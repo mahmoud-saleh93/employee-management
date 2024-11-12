@@ -54,33 +54,46 @@ public class EmployeeService {
                 .orElseThrow(() -> new EmployeeNotFoundException("Employee not found"));
     }
 
-    public Employee updateEmployee(UUID id, Employee employee) {
-        Employee existingEmployee =null;
-        logger.info("Starting employee update process foremployee id:" + existingEmployee);
+    public Employee updateEmployee(UUID id, Employee updatedEmployee) {
+        logger.info("Starting employee update process for employee ID: {}", id);
+
         try {
-            logger.info("getting existing employee with id:" + id);
-            existingEmployee = getEmployee(id);
-            logger.info("the existing employee for id:" + id + " is " + employee);
-        } catch (EmployeeNotFoundException e){
-            logger.error("there is no employee with the following id:"+ id);
+            Employee existingEmployee = getEmployee(id);
+            logger.info("Found existing employee for ID {}: {}", id, existingEmployee);
+
+            if (updatedEmployee.getFirstName() != null) {
+                existingEmployee.setFirstName(updatedEmployee.getFirstName());
+            }
+            if (updatedEmployee.getLastName() != null) {
+                existingEmployee.setLastName(updatedEmployee.getLastName());
+            }
+            if (updatedEmployee.getEmail() != null) {
+                existingEmployee.setEmail(updatedEmployee.getEmail());
+            }
+            if (updatedEmployee.getDepartment() != null) {
+                existingEmployee.setDepartment(updatedEmployee.getDepartment());
+            }
+            if (updatedEmployee.getSalary() != 0) {
+                existingEmployee.setSalary(updatedEmployee.getSalary());
+            }
+
+            Employee savedEmployee = repository.save(existingEmployee);
+            logger.info("Employee updated successfully for ID: {}", id);
+
+            notificationService.sendEmployeeUpdateNotification(savedEmployee);
+            logger.info("Notification sent for employee update.");
+
+            return savedEmployee;
+
+        } catch (EmployeeNotFoundException e) {
+            logger.error("No employee found with ID: {}", id, e);
+            throw e;
+        } catch (Exception e) {
+            logger.error("An unexpected error occurred during the update process for employee ID: {}", id, e);
+            throw e;
         }
-        existingEmployee.setFirstName(employee.getFirstName());
-        existingEmployee.setLastName(employee.getLastName());
-        existingEmployee.setEmail(employee.getEmail());
-        existingEmployee.setDepartment(employee.getDepartment());
-        existingEmployee.setSalary(employee.getSalary());
-        Employee savedEmployee = repository.save(employee);
-        logger.info("employee updated.");
-
-        notificationService.sendEmployeeUpdateNotification(existingEmployee);
-        logger.info("notification sent for employee update.");
-
-        return savedEmployee;
     }
 
-//    public void deleteEmployee(UUID id) {
-//        logger.info("deleting employee with the following id:" + id);
-//        repository.deleteById(id);
 
     public void deleteEmployee(UUID employeeId) {
         Employee employee = repository.findById(employeeId)
