@@ -105,6 +105,7 @@ Content-Type: application/json
 ### Note:
  -make sue that the validation service is running before running the employee Management service.
  -the dockerfile is under : /src/main/resources
+ -the postman collection is root level of the repo
 **improvments:
 	1- instead of running two dockerfiles separatly I could have used docker compose.
 	2- improving the code with more exception and covering more cases.
